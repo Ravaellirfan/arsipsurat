@@ -51,9 +51,9 @@ if (isset($_SESSION['level'])) {
 <div class="container min-vh-100 d-flex align-items-center justify-content-center">
     <div class="col-md-7">
         <div class="p-5 text-center hero">
-            <img src="https://cdn-icons-png.flaticon.com/512/2991/2991108.png" alt="Logo Arsip" class="logo">
+            <img src="logo.jpg" alt="Logo bgtk" class="logo">
             <h1 class="mb-3 fw-bold">SIPAS BGTK - Sistem Informasi Pengarsipan Surat.</h1>
-            <p class="mb-4">Sistem pengarsipan surat kepegawaian digital, aman, dan mudah diakses.<br>Login untuk melanjutkan.</p>
+            <p class="mb-4">Sistem pengarsipan surat kepegawaian digital, aman, dan mudah diakses.</p>
             <a href="/arsipsurat/login.php" class="btn btn-custom btn-lg px-5">Login</a>
         </div>
     </div>
