@@ -39,9 +39,8 @@ if (isset($_POST['login'])) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
-            background: #fff;
-            background-image: repeating-linear-gradient(135deg, #f5f5f5 0px, #f5f5f5 2px, transparent 2px, transparent 24px);
-            background-size: 24px 24px;
+            /* Background biru polos */
+            background: #1565c0;
         }
         .login-card {
             background: rgba(255,255,255,0.92);
@@ -56,7 +55,7 @@ if (isset($_POST['login'])) {
     <div class="col-md-5">
         <div class="login-card">
             <div class="text-center mb-4">
-                <img src="logo.jpg" alt="Logo" class="login-logo" style="width:70px;margin-bottom:1rem;">
+                <img src="logo.png" alt="Logo" class="login-logo" style="width:70px;margin-bottom:1rem;">
                 <h4 class="fw-bold">SIPAS BGTK - Sistem Informasi Pengarsipan Surat.</h4>
             </div>
             <?php if ($error) { echo '<div class="alert alert-danger">'.$error.'</div>'; } ?>

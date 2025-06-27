@@ -31,9 +31,7 @@ $surat = mysqli_query($conn, "SELECT s.*, u.nama as uploader FROM surat s LEFT J
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
-            background: #fff;
-            background-image: repeating-linear-gradient(135deg, #f5f5f5 0px, #f5f5f5 2px, transparent 2px, transparent 24px);
-            background-size: 24px 24px;
+            background: #1565c0;
         }
         .bg-blur {
             background: rgba(255,255,255,0.92);
@@ -44,6 +42,9 @@ $surat = mysqli_query($conn, "SELECT s.*, u.nama as uploader FROM surat s LEFT J
         }
         .table thead th {
             vertical-align: middle;
+        }
+        .navbar, .navbar.bg-primary, .navbar.navbar-dark.bg-primary {
+            background-color: #1565c0 !important;
         }
     </style>
 </head>
