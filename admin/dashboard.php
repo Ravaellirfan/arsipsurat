@@ -6,6 +6,70 @@ if (!isset($_SESSION['level']) || $_SESSION['level'] != 'admin') {
 }
 include '../db/koneksi.php';
 $msg = '';
+// Hapus modul
+if (isset($_GET['delete'])) {
+    $id = intval($_GET['delete']);
+    $q = mysqli_query($conn, "SELECT file_path FROM modul_bgtk WHERE id=$id");
+    $f = mysqli_fetch_assoc($q);
+    if ($f) {
+        $file_path = '../assets/uploads/' . $f['file_path'];
+        if (file_exists($file_path)) {
+            unlink($file_path);
+        }
+        mysqli_query($conn, "DELETE FROM modul_bgtk WHERE id=$id");
+        $msg = '<div class="alert alert-success">Data berhasil dihapus!</div>';
+        // Refresh agar tidak mengulang hapus jika reload
+        echo "<script>location.href='dashboard.php';</script>";
+        exit();
+    }
+}
+// Edit modul
+$edit_data = null;
+if (isset($_GET['edit'])) {
+    $id = intval($_GET['edit']);
+    $q = mysqli_query($conn, "SELECT * FROM modul_bgtk WHERE id=$id");
+    $edit_data = mysqli_fetch_assoc($q);
+}
+// Update modul
+if (isset($_POST['update_modul'])) {
+    $id = intval($_POST['id']);
+    $judul = mysqli_real_escape_string($conn, $_POST['judul']);
+    $deskripsi = mysqli_real_escape_string($conn, $_POST['deskripsi']);
+    $sql = null;
+    if (!empty($_FILES['file']['name'])) {
+        $file = $_FILES['file']['name'];
+        $tmp = $_FILES['file']['tmp_name'];
+        $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+        $allowed = ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx'];
+        if (in_array($ext, $allowed)) {
+            $newname = uniqid('modul_', true) . '.' . $ext;
+            $path = '../assets/uploads/' . $newname;
+            if (move_uploaded_file($tmp, $path)) {
+                // Hapus file lama
+                $q = mysqli_query($conn, "SELECT file_path FROM modul_bgtk WHERE id=$id");
+                $f = mysqli_fetch_assoc($q);
+                if ($f && file_exists('../assets/uploads/' . $f['file_path'])) {
+                    unlink('../assets/uploads/' . $f['file_path']);
+                }
+                $sql = "UPDATE modul_bgtk SET judul='$judul', deskripsi='$deskripsi', file_path='$newname' WHERE id=$id";
+            } else {
+                $msg = '<div class="alert alert-danger">Gagal upload file baru.</div>';
+            }
+        } else {
+            $msg = '<div class="alert alert-danger">File harus berformat PDF/DOC/PPT/XLS.</div>';
+        }
+    } else {
+        $sql = "UPDATE modul_bgtk SET judul='$judul', deskripsi='$deskripsi' WHERE id=$id";
+    }
+    if ($sql && mysqli_query($conn, $sql)) {
+        $msg = '<div class="alert alert-success">Data berhasil diupdate!</div>';
+        echo "<script>location.href='dashboard.php';</script>";
+        exit();
+    } elseif (!$msg) {
+        $msg = '<div class="alert alert-danger">Gagal update data: '.mysqli_error($conn).'</div>';
+    }
+}
+// Upload modul
 if (isset($_POST['upload_modul'])) {
     $judul = mysqli_real_escape_string($conn, $_POST['judul']);
     $deskripsi = mysqli_real_escape_string($conn, $_POST['deskripsi']);
@@ -20,11 +84,13 @@ if (isset($_POST['upload_modul'])) {
             $sql = "INSERT INTO modul_bgtk (judul, deskripsi, file_path, uploaded_at) VALUES ('$judul', '$deskripsi', '$newname', NOW())";
             if (mysqli_query($conn, $sql)) {
                 $msg = '<div class="alert alert-success">Modul/Juklas/Juknis berhasil diupload!</div>';
+                echo "<script>location.href='dashboard.php';</script>";
+                exit();
             } else {
                 $msg = '<div class="alert alert-danger">Gagal upload data: '.mysqli_error($conn).'</div>';
             }
         } else {
-            $msg = '<div class="alert alert-danger">Gagal upload file.</div>';
+            $msg = '<div class="alert alert-danger">Gagal upload file ke server.</div>';
         }
     } else {
         $msg = '<div class="alert alert-danger">File harus berformat PDF/DOC/PPT/XLS.</div>';
@@ -83,6 +149,25 @@ $modul = mysqli_query($conn, "SELECT * FROM modul_bgtk ORDER BY id DESC") or die
     <div class="dashboard-card mb-4">
         <h4>Upload Informasi Umum, Kegiatan, dan Modul/Juklas/Juknis BGTK</h4>
         <?php echo $msg; ?>
+        <?php if ($edit_data): ?>
+        <form method="post" enctype="multipart/form-data">
+            <input type="hidden" name="id" value="<?= $edit_data['id'] ?>">
+            <div class="mb-3">
+                <label>Judul</label>
+                <input type="text" name="judul" class="form-control" value="<?= htmlspecialchars($edit_data['judul']) ?>" required>
+            </div>
+            <div class="mb-3">
+                <label>Deskripsi</label>
+                <textarea name="deskripsi" class="form-control" required><?= htmlspecialchars($edit_data['deskripsi']) ?></textarea>
+            </div>
+            <div class="mb-3">
+                <label>File (PDF/DOC/PPT/XLS) <small>(Kosongkan jika tidak ingin ganti file)</small></label>
+                <input type="file" name="file" class="form-control">
+            </div>
+            <button type="submit" name="update_modul" class="btn btn-warning">Update</button>
+            <a href="dashboard.php" class="btn btn-secondary">Batal</a>
+        </form>
+        <?php else: ?>
         <form method="post" enctype="multipart/form-data">
             <div class="mb-3">
                 <label>Judul</label>
@@ -98,6 +183,7 @@ $modul = mysqli_query($conn, "SELECT * FROM modul_bgtk ORDER BY id DESC") or die
             </div>
             <button type="submit" name="upload_modul" class="btn btn-primary">Upload</button>
         </form>
+        <?php endif; ?>
     </div>
     <div class="dashboard-card">
         <h4>Data Informasi Umum, Kegiatan, dan Modul/Juklas/Juknis BGTK</h4>
@@ -110,6 +196,7 @@ $modul = mysqli_query($conn, "SELECT * FROM modul_bgtk ORDER BY id DESC") or die
                     <th>Deskripsi</th>
                     <th>File</th>
                     <th>Tanggal Upload</th>
+                    <th>Aksi</th>
                 </tr>
             </thead>
             <tbody>
@@ -120,6 +207,10 @@ $modul = mysqli_query($conn, "SELECT * FROM modul_bgtk ORDER BY id DESC") or die
                     <td><?= htmlspecialchars($row['deskripsi']) ?></td>
                     <td><a href="../assets/uploads/<?= urlencode($row['file_path']) ?>" target="_blank" class="btn btn-sm btn-primary">Baca/Download</a></td>
                     <td><?= htmlspecialchars($row['uploaded_at']) ?></td>
+                    <td>
+                        <a href="?edit=<?= $row['id'] ?>" class="btn btn-sm btn-warning">Edit</a>
+                        <a href="?delete=<?= $row['id'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Yakin ingin menghapus data ini?')">Delete</a>
+                    </td>
                 </tr>
             <?php endwhile; ?>
             </tbody>
